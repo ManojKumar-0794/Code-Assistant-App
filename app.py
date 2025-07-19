@@ -1,24 +1,29 @@
 import streamlit as st
+import openai
+import os
 
-# Title
-st.title("Code Assistant App")
+st.title("AI Code Assistant")
 
-# Input
-query = st.text_input("Enter your query (e.g. 'merge two Excel files in Python')")
+# Step 1: API Key input
+api_key = st.text_input("Enter your OpenAI API Key:", type="password")
 
-# Simulated code lookup
-if query:
-    st.write("Searching open-source code repositories...")
-    
-    # Example response
-    if "excel" in query.lower():
-        st.code("import pandas as pd\n\nfile1 = pd.read_excel('file1.xlsx')\nfile2 = pd.read_excel('file2.xlsx')\nmerged = pd.concat([file1, file2])")
-    elif "vba" in query.lower():
-        st.code('Sub AutoRun()\n  MsgBox "Hello from VBA!"\nEnd Sub')
-    elif "formula" in query.lower():
-        st.code('=IF(A1>10, "High", "Low")')
+# Step 2: Ask prompt
+prompt = st.text_area("What do you want help with?", height=150)
+
+if st.button("Generate Code"):
+    if not api_key:
+        st.warning("Please enter your OpenAI API Key.")
+    elif not prompt:
+        st.warning("Please type a prompt.")
     else:
-        st.write("No example yet. More functionality coming soon!")
-
-st.markdown("---")
-st.caption("This is just a demo. You’ll later connect this to real open-source sources.")
+        with st.spinner("Generating..."):
+            try:
+                openai.api_key = api_key
+                response = openai.ChatCompletion.create(
+                    model="gpt-3.5-turbo",
+                    messages=[{"role": "user", "content": prompt}]
+                )
+                code = response.choices[0].message.content
+                st.code(code, language='python')
+            except Exception as e:
+                st.error(f"Error: {e}")
