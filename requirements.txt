@@ -1,4 +1,5 @@
 requests
-openai
+
 streamlit
 pandas
+openai>=1.0.0
